@@ -38,7 +38,7 @@ Push image to Docker through Jenkins with DockerhubJenkinsfile on repo
 Setup Apps and run through jenkins with AppDeployJenkinsfile on repo
 
 5. Setup different pipeline for development and production env with different branch for each:
-Create separate branch as development and use main as production in github
+Create separate branch as dev and use main as production in github
 
 Setup namespace for development and productiona and deploy Apps
 Create namespace:

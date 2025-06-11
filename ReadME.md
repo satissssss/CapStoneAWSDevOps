@@ -37,16 +37,20 @@ Setup EKS and K8s through Jenkins with K8sEKSJenkinsfile on repo
 Push image to Docker through Jenkins with DockerhubJenkinsfile on repo
 Setup Apps and run through jenkins with AppDeployJenkinsfile on repo
 
-5. Setup namespace for development and productiona and deploy Apps
+5. Setup different pipeline for development and production env with different branch for each:
+Create separate branch as development and use main as production in github
+
+Setup namespace for development and productiona and deploy Apps
 Create namespace:
 kubectl apply -f namespace_dev.yaml
 kubectl apply -f namespace_prod.yaml
 
-6. Deploy app into namespace by adding --namespace at end
+Deploy app into namespace by adding --namespace at end
 kubectl apply -f kubernetes.yaml --namespace=development
 kubectl apply -f kubernetes.yaml --namespace=production
 
 Check deployed pods in namespace:
 kubectl get pods --namespace=development
+
 
 

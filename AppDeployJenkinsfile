@@ -5,6 +5,11 @@ pipeline {
         PLATFORM = 'linux_amd64'        
         BIN_PATH = '/var/lib/jenkins/.local/bin'
     }
+ parameters {
+        string(name: 'EKS_CLUSTER_NAME', defaultValue: '', description: 'EKS Cluster Name')
+     
+    }
+
 
     stages {        
        
@@ -41,6 +46,7 @@ pipeline {
 			$class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-eks-cred' ]]){        
                 echo "Install App through kubectl for prod namespace"
+ sh 'aws eks update-kubeconfig --region us-east-1 --name ${EKS_CLUSTER_NAME}'
                 sh '${BIN_PATH}/kubectl apply -f namespace_prod.yaml'
                 sh '${BIN_PATH}/kubectl apply -f kubernetes.yaml --namespace="production"'
                 sh '${BIN_PATH}/kubectl wait --for=condition=available deployments --all'                                     

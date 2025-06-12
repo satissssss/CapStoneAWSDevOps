@@ -21,27 +21,26 @@ pipeline {
                 sh '${BIN_PATH}/kubectl version --client=true'                       
             }
         }
-        stage('Install eksctl') {
+        stage('INSTALL EKSCTL') {
             steps {
                 script {
-                    // need to add a check to see if the file exists before installing, or check version against latest version
-                    // need to change this to use jenkins agents (containers) instead of the master node                    
-                    echo "Installing eksctl"
+                    echo "Install eksctl"
                     sh 'curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_${PLATFORM}.tar.gz"'                          
                     sh 'tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz'
                     sh 'mv /tmp/eksctl ~/.local/bin/eksctl'                    
-                    echo "Getting eksctl version"
+                    echo "Checking eksctl version"
                     sh '${BIN_PATH}/eksctl version'
 
                 }                
             }
         }
-        stage('deploy to k8s') {
+        stage('DEPLOY TO K8S') {
             steps {    
-withCredentials([[
+             echo "Provide AWS credential"
+                   withCredentials([[
 			$class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-eks-cred' ]]){        
-                 echo "Install App"
+                echo "Install App through kubectl for prod namespace"
                 sh '${BIN_PATH}/kubectl apply -f namespace_prod.yaml'
                 sh '${BIN_PATH}/kubectl apply -f kubernetes.yaml --namespace="production"'
                 sh '${BIN_PATH}/kubectl wait --for=condition=available deployments --all'                                     

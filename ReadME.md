@@ -29,8 +29,9 @@ sudo systemctl status Jenkins
 
 Access the Jenkins on Public DNS on port 8080
 
-3. Setup K8s and EKS
+--Setup AWS credential in the Manage Jenkins --> Global Credentials
 
+3. Setup K8s and EKS
 Setup EKS and K8s through Jenkins with K8sEKSJenkinsfile on repo
 
 4. Setup Apps
@@ -52,5 +53,7 @@ kubectl apply -f kubernetes.yaml --namespace=production
 Check deployed pods in namespace:
 kubectl get pods --namespace=development
 
+6. Delete the EKS cluster using pipeline
+Setup EKS and K8s through Jenkins with K8sEKSdeleteJenkinsfile on repo
 
 

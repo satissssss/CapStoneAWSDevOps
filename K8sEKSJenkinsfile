@@ -38,7 +38,7 @@ pipeline {
                 }                
             }
         }             
-        stage('Create EKS Cluster') {               
+/*        stage('Create EKS Cluster') {               
             when {
                 expression {
                     // check if the cluster exists, if it does, skip this stage
@@ -98,7 +98,7 @@ pipeline {
                     }                    
                 }
             }
-        }        
+        } */       
         stage('Update kubeconfig') {
             steps {
                 echo "Updating kubeconfig"

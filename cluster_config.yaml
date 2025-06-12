@@ -2,7 +2,7 @@ apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 
 metadata:
-  name: sat-cluster-caps
+  name: test-cluster-name
   region: us-east-1
   version: "1.32"
 
@@ -39,7 +39,7 @@ addons:
     version: latest
  
 managedNodeGroups:
-  - name: nodegroup-1-caps
+  - name: nodegroup-1
     instanceType: t2.medium
     spot: true
     minSize: 2

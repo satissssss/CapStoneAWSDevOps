@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: supermario-capstone
+  labels:
+    app: mario
+spec:
+  containers:
+  - name:  supermario-demo-caps
+    image: pengbai/docker-supermario
+    ports: 
+    - containerPort: 8080

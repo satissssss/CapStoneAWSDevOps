@@ -44,7 +44,7 @@ pipeline {
                 expression {
                     // check if the cluster exists, if it does, skip this stage
                     try {
-	withCredentials([[Add commentMore actions
+	withCredentials([[
 			$class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-eks-cred' ]])
 {			                    
@@ -64,7 +64,7 @@ pipeline {
             }
             steps {
                 echo "Delete EKS Cluster"
-		withCredentials([[Add commentMore actions
+		withCredentials([[
 			$class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-eks-cred' ]]){	
                 sh '${BIN_PATH}/eksctl delete cluster -f cluster_config.yaml' 
@@ -75,7 +75,7 @@ pipeline {
                     script {
                         try {
                         // if EKS Cluster create fails, try and delete it so we don't leave it in an inconsistent state
-withCredentials([[Add commentMore actions
+withCredentials([[
 			$class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-eks-cred' ]]){
                         sh 'aws cloudformation delete-stack --region us-east-1 --stack-name ${EKS_CLUSTER_NAME}'                                                                                                
@@ -106,7 +106,7 @@ withCredentials([[Add commentMore actions
         }        
         stage('Check Cluster exists') {
             steps {
-withCredentials([[Add commentMore actions
+withCredentials([[
 			$class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-eks-cred' ]])
 {			                    

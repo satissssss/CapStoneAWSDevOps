@@ -38,7 +38,7 @@ pipeline {
                 }                
             }
         }             
-/*        stage('Create EKS Cluster') {               
+        stage('Create EKS Cluster') {               
             when {
                 expression {
                     // check if the cluster exists, if it does, skip this stage
@@ -111,7 +111,7 @@ withCredentials([[
                 sh '${BIN_PATH}/kubectl cluster-info'
             }
 }
-        }*/    
+        }   
         stage('Deploy Application') {
                      steps {
                 echo 'Deploying application to EKS Cluster'

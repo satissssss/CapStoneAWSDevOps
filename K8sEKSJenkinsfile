@@ -47,13 +47,14 @@ pipeline {
 			$class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-eks-cred' ]]){                    
                         sh 'aws eks describe-cluster --name ${EKS_CLUSTER_NAME} --region us-east-1'
+}
                         catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
                             // if the cluster exists, this will not throw an error
                             echo "EKS Cluster already exists, skipping creation"
                             // return false to skip the stage
                             return false
                         }
-}
+
                         return false // cluster exists, skip creation
                     } catch (Exception e) {
                         return true // cluster does not exist, proceed with creation

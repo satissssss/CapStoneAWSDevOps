@@ -2,7 +2,7 @@ apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 
 metadata:
-  name: sat-cluster-capstone
+  name: sat-cluster-capstone1
   region: us-east-1
   version: "1.32"
 
@@ -39,7 +39,7 @@ addons:
     version: latest
  
 managedNodeGroups:
-  - name: nodegroup-1
+  - name: nodegroup-1-caps
     instanceType: t2.medium
     spot: true
     minSize: 2
@@ -58,7 +58,7 @@ managedNodeGroups:
 fargateProfiles:
   - name: on-fargate
     selectors:
-      - namespace: on-fargat
+      - namespace: on-fargat-caps
   - name: myprofile
     selectors: 
     - namespace: prod

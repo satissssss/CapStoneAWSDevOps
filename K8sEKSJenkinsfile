@@ -6,6 +6,11 @@ pipeline {
         PLATFORM = 'linux_amd64'        
         BIN_PATH = '/var/lib/jenkins/.local/bin'
     }
+ parameters {
+        string(name: 'EKS_CLUSTER_NAME', defaultValue: '', description: 'EKS Cluster Name')
+     
+    }
+
 
     stages {        
        
@@ -41,7 +46,7 @@ pipeline {
 			withCredentials([[
 			$class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-eks-cred' ]]){                    
-                        sh 'aws eks describe-cluster --name sat-cluster-capstone --region us-east-1'
+                        sh 'aws eks describe-cluster --name ${EKS_CLUSTER_NAME} --region us-east-1'
                         catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
                             // if the cluster exists, this will not throw an error
                             echo "EKS Cluster already exists, skipping creation"
@@ -69,14 +74,14 @@ pipeline {
                         // if EKS Cluster create fails, try and delete it so we don't leave it in an inconsistent state
                         // this is hardcoded and needs to be paramterized later
 
-                        sh 'aws cloudformation delete-stack --region us-east-1 --stack-name sat-cluster-capstone'                                                                                                
-                        sh 'aws cloudformation wait stack-delete-complete --region us-east-1 --stack-name sat-cluster-capstone'
+                        sh 'aws cloudformation delete-stack --region us-east-1 --stack-name ${EKS_CLUSTER_NAME}'                                                                                                
+                        sh 'aws cloudformation wait stack-delete-complete --region us-east-1 --stack-name ${EKS_CLUSTER_NAME}'
                         }
                         catch (Exception e) {                            
                                 echo "Failed to delete Cloudformation Stack: " + e.getMessage()
                                 echo "Forcing deletion of Cloudformation Stack"
-                                sh 'aws cloudformation delete-stack --deletion-mode FORCE_DELETE_STACK --region us-east-1 --stack-name sat-cluster-capstone'                                
-                                sh 'aws cloudformation wait stack-delete-complete --region us-east-1 --stack-name sat-cluster-capstone'
+                                sh 'aws cloudformation delete-stack --deletion-mode FORCE_DELETE_STACK --region us-east-1 --stack-name ${EKS_CLUSTER_NAME}'                                
+                                sh 'aws cloudformation wait stack-delete-complete --region us-east-1 --stack-name ${EKS_CLUSTER_NAME}'
                         }                    
                         finally {
 
@@ -97,7 +102,7 @@ pipeline {
         stage('Update kubeconfig') {
             steps {
                 echo "Updating kubeconfig"
-                sh 'aws eks update-kubeconfig --region us-east-1 --name sat-cluster-capstone'
+                sh 'aws eks update-kubeconfig --region us-east-1 --name ${EKS_CLUSTER_NAME}'
                 sh '${BIN_PATH}/kubectl cluster-info'
             }
         }

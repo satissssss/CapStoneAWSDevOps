@@ -11,9 +11,7 @@ pipeline {
        
         stage('Install kubectl') {
             steps {            
-                // need to add a check to see if the file exists before installing, or check version against latest version                
-                // need to change this to use jenkins agents (containers) instead of the master node
-                echo "Installing eksctl"
+                echo "Installing kubectl"
                 sh 'curl -O "https://s3.us-west-2.amazonaws.com/amazon-eks/1.33.0/2025-05-01/bin/linux/amd64/kubectl"'
                 sh 'chmod +x ./kubectl'                                   
                 sh 'mkdir -p ~/.local/bin'                
@@ -25,25 +23,23 @@ pipeline {
         stage('Install eksctl') {
             steps {
                 script {
-                    // need to add a check to see if the file exists before installing, or check version against latest version
-                    // need to change this to use jenkins agents (containers) instead of the master node                    
                     echo "Installing eksctl"
                     sh 'curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_${PLATFORM}.tar.gz"'                          
                     sh 'tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz'
                     sh 'mv /tmp/eksctl ~/.local/bin/eksctl'                    
-                    echo "Getting eksctl version"
+                    echo "Checking eksctl version"
                     sh '${BIN_PATH}/eksctl version'
 
                 }                
             }
         }             
-/*        stage('Create EKS Cluster') {               
+        stage('Create EKS Cluster') {               
             when {
                 expression {
                     // check if the cluster exists, if it does, skip this stage
                     try {
 			                    
-                        sh 'aws eks describe-cluster --name test-cluster-name --region us-east-1'
+                        sh 'aws eks describe-cluster --name sat-cluster-capstone --region us-east-1'
                         catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
                             // if the cluster exists, this will not throw an error
                             echo "EKS Cluster already exists, skipping creation"
@@ -71,14 +67,14 @@ pipeline {
                         // if EKS Cluster create fails, try and delete it so we don't leave it in an inconsistent state
                         // this is hardcoded and needs to be paramterized later
 
-                        sh 'aws cloudformation delete-stack --region us-east-1 --stack-name eksctl-test-cluster-name-cluster'                                                                                                
-                        sh 'aws cloudformation wait stack-delete-complete --region us-east-1 --stack-name eksctl-test-cluster-name-cluster'
+                        sh 'aws cloudformation delete-stack --region us-east-1 --stack-name sat-cluster-capstone'                                                                                                
+                        sh 'aws cloudformation wait stack-delete-complete --region us-east-1 --stack-name sat-cluster-capstone'
                         }
                         catch (Exception e) {                            
                                 echo "Failed to delete Cloudformation Stack: " + e.getMessage()
                                 echo "Forcing deletion of Cloudformation Stack"
-                                sh 'aws cloudformation delete-stack --deletion-mode FORCE_DELETE_STACK --region us-east-1 --stack-name eksctl-test-cluster-name-cluster'                                
-                                sh 'aws cloudformation wait stack-delete-complete --region us-east-1 --stack-name eksctl-test-cluster-name-cluster'
+                                sh 'aws cloudformation delete-stack --deletion-mode FORCE_DELETE_STACK --region us-east-1 --stack-name sat-cluster-capstone'                                
+                                sh 'aws cloudformation wait stack-delete-complete --region us-east-1 --stack-name sat-cluster-capstone'
                         }                    
                         finally {
 
@@ -99,21 +95,27 @@ pipeline {
         stage('Update kubeconfig') {
             steps {
                 echo "Updating kubeconfig"
-                sh 'aws eks update-kubeconfig --region us-east-1 --name test-cluster-name'
+                sh 'aws eks update-kubeconfig --region us-east-1 --name sat-cluster-capstone'
                 sh '${BIN_PATH}/kubectl cluster-info'
             }
         }
         stage('Deploy Application') {
-            steps {
+                     steps {
                 echo 'Deploying application to EKS Cluster'
-                // test push
+             steps {
+withCredentials([[
+			$class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-eks-cred' ]]){ 
+                    echo "deploy App"
+                    sh '${BIN_PATH}/kubectl apply -f mario-pod.yaml'                          
+                    sh '${BIN_PATH}/kubectl describe pod supermario-capstone'
+                    sh '${BIN_PATH}/kubectl expose pod supermario-capstone --type=LoadBalancer --name=supermario-svc-capstone --port=80 --target-port=8080'
+                    sh '${BIN_PATH}/kubectl get service'
+ 			}
+           }
             }
 
-        }*/
-        //stage('Cleaning Workspace') {
-        //    steps {
-         //       cleanWs()
-          //  }
-        //}
+
+        }
     }    
 }

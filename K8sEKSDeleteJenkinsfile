@@ -6,6 +6,11 @@ pipeline {
         PLATFORM = 'linux_amd64'        
         BIN_PATH = '/var/lib/jenkins/.local/bin'
     }
+ parameters {
+        string(name: 'EKS_CLUSTER_NAME', defaultValue: '', description: 'EKS Cluster Name')
+     
+    }
+
 
     stages {        
        
@@ -43,7 +48,7 @@ pipeline {
 			$class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-eks-cred' ]])
 {			                    
-                        sh 'aws eks describe-cluster --name test-cluster-name --region us-east-1'
+                        sh 'aws eks describe-cluster --name ${EKS_CLUSTER_NAME} --region us-east-1'
                         catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
                             // if the cluster exists, this will not throw an error
                             echo "EKS Cluster already exists, skipping creation"
@@ -73,15 +78,15 @@ pipeline {
 withCredentials([[Add commentMore actions
 			$class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-eks-cred' ]]){
-                        sh 'aws cloudformation delete-stack --region us-east-1 --stack-name eksctl-test-cluster-name-cluster'                                                                                                
-                        sh 'aws cloudformation wait stack-delete-complete --region us-east-1 --stack-name eksctl-test-cluster-name-cluster'
+                        sh 'aws cloudformation delete-stack --region us-east-1 --stack-name ${EKS_CLUSTER_NAME}'                                                                                                
+                        sh 'aws cloudformation wait stack-delete-complete --region us-east-1 --stack-name ${EKS_CLUSTER_NAME}'
                         }
 }
                         catch (Exception e) {                            
                                 echo "Failed to delete Cloudformation Stack: " + e.getMessage()
                                 echo "Forcing deletion of Cloudformation Stack"
-                                sh 'aws cloudformation delete-stack --deletion-mode FORCE_DELETE_STACK --region us-east-1 --stack-name eksctl-test-cluster-name-cluster'                                
-                                sh 'aws cloudformation wait stack-delete-complete --region us-east-1 --stack-name eksctl-test-cluster-name-cluster'
+                                sh 'aws cloudformation delete-stack --deletion-mode FORCE_DELETE_STACK --region us-east-1 --stack-name ${EKS_CLUSTER_NAME}'                                
+                                sh 'aws cloudformation wait stack-delete-complete --region us-east-1 --stack-name ${EKS_CLUSTER_NAME}'
                         }                    
                         finally {
 
@@ -99,34 +104,14 @@ withCredentials([[Add commentMore actions
                 }
             }
         }        
-        stage('Update kubeconfig') {
+        stage('Check Cluster exists') {
             steps {
-                echo "Updating kubeconfig"
-                sh 'aws eks update-kubeconfig --region us-east-1 --name test-cluster-name'
-                sh '${BIN_PATH}/kubectl cluster-info'
-            }
-        }
-        stage('Deploy Application') {
-            steps {
-                echo 'Deploying application to EKS Cluster'
-             steps {
-withCredentials([[
+withCredentials([[Add commentMore actions
 			$class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-eks-cred' ]]){ 
-                    echo "deploy App"
-                    sh '${BIN_PATH}/kubectl apply -f mario-pod.yaml'                          
-                    sh '${BIN_PATH}/kubectl describe pod supermario-capstone'
-                    sh '${BIN_PATH}/kubectl expose pod supermario-capstone --type=LoadBalancer --name=supermario-svc-capstone --port=80 --target-port=8080'
-                    sh '${BIN_PATH}/kubectl get service'
- 			}
-           }
-            }
-
+                    credentialsId: 'aws-eks-cred' ]])
+{			                    
+                        sh 'aws eks describe-cluster --name ${EKS_CLUSTER_NAME} --region us-east-1'
+                    }
         }
-        //stage('Cleaning Workspace') {
-        //    steps {
-         //       cleanWs()
-          //  }
-        //}
-    }    
+            }    
 }

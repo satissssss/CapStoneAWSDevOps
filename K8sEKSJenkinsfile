@@ -38,7 +38,9 @@ pipeline {
                 expression {
                     // check if the cluster exists, if it does, skip this stage
                     try {
-			                    
+			withCredentials([[
+			$class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-eks-cred' ]]){                    
                         sh 'aws eks describe-cluster --name sat-cluster-capstone --region us-east-1'
                         catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
                             // if the cluster exists, this will not throw an error
@@ -46,6 +48,7 @@ pipeline {
                             // return false to skip the stage
                             return false
                         }
+}
                         return false // cluster exists, skip creation
                     } catch (Exception e) {
                         return true // cluster does not exist, proceed with creation
@@ -60,8 +63,7 @@ pipeline {
                 sh '${BIN_PATH}/eksctl create cluster -f cluster_config.yaml' 
 }      
             }        
-            post {                
-                failure {
+            post {                                failure {
                     script {
                         try {
                         // if EKS Cluster create fails, try and delete it so we don't leave it in an inconsistent state
